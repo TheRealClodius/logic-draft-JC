@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Compass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --header-bg: #f8f8f8;
+            --border-color: #dddddd;
+            --job-item-bg: #f9f9f9;
+        }
+
+        .dark-theme {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --header-bg: #2c2c2c;
+            --border-color: #444444;
+            --job-item-bg: #2c2c2c;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1, h2, h3 {
+            color: var(--text-color);
+        }
+        h2 {
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 10px;
+            height: 100%; /* Fill the entire height of the parent */
+        }
+        #jobAnalysis, #userOverview {
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            background-color: var(--bg-color);
+        }
+        #jobAnalysis {
+            width: 65%;
+            margin-right: 10px;
+        }
+        #userOverview {
+            width: 33%;
+            display: flex;
+            flex-direction: column;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            background-color: var(--bg-color);
+        }
+        .job-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--job-item-bg);
+            border-radius: 10px;
+        }
+        #error-message {
+            color: red;
+            font-weight: bold;
+        }
+        .section-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .overview-content {
+            margin-left: 20px;
+        }
+        .overview-list {
+            margin-top: 0;
+            padding-left: 20px;
+        }
+        #theme-toggle {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .auto-apply-btn {
+            background-color: #5500FF;
+            border: none;
+            color: white;
+            height: 40px;
+            padding: 0 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .auto-apply-btn i {
+            margin-right: 8px;
+        }
+
+        .auto-apply-btn:hover {
+            background-color: #4400CC;
+        }
+
+        .dark-theme .auto-apply-btn {
+            background-color: #5500FF;
+        }
+
+        .dark-theme .auto-apply-btn:hover {
+            background-color: #4400CC;
+        }
+
+        .logo {
+            max-height: 40px;
+            width: auto;
+            height: auto;
+        }
+
+        .reasons-list {
+            font-size: 0.9em;
+            color: #666666;
+        }
+
+        .dark-theme .reasons-list {
+            color: #b0b0b0;
+        }
+
+        .reasons-list p {
+            margin: 0.5em 0;
+        }
+
+        #jobCount {
+            font-size: 12px;
+            color: #646464;
+            margin-bottom: 20px; /* Adjust this value to increase/decrease the space */
+        }
+
+        .user-overview-header {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            padding: 10px 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-overview-content {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu {
+            display: flex;
+            gap: 10px;
+        }
+
+        .menu-button {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .menu-button:hover, .menu-button.active {
+            background-color: rgba(128, 128, 128, 0.2);
+        }
+
+        .dark-theme .menu-button {
+            color: #ffffff;
+        }
+
+        .dark-theme .menu-button:hover, .dark-theme .menu-button.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #docsContent {
+            display: none;
+            padding: 20px;
+            height: calc(100vh - 75px);
+            overflow-y: auto;
+        }
+
+        .upload-card {
+            background-color: var(--bg-color);
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            margin: 50px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px; /* Add space between icon and button */
+        }
+
+        .upload-btn {
+            background-color: #5500FF;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .upload-btn:hover {
+            background-color: #4400CC;
+        }
+
+        .dark-theme .upload-card {
+            background-color: var(--job-item-bg);
+        }
+
+        .dark-theme .upload-btn {
+            background-color: #5500FF;
+        }
+
+        .dark-theme .upload-btn:hover {
+            background-color: #4400CC;
+        }
+
+        /* Adjust the container to account for the 75px header */
+        #dashboardContent, #docsContent {
+            padding-top: 75px; /* Add padding to account for fixed header */
+            height: calc(100vh - 75px);
+            overflow-y: auto;
+        }
+
+        .progress {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 13px;
+            padding: 3px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #5500FF;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="Logo.png" alt="Job Compass Logo" class="logo" id="logo" style="height: 30px; width: auto;">
+        </div>
+        <nav class="menu">
+            <button class="menu-button active" id="dashboardBtn">Dashboard</button>
+            <button class="menu-button" id="docsBtn">Docs</button>
+        </nav>
+        <button id="theme-toggle">Toggle Theme</button>
+    </header>
+    <div id="error-message"></div>
+    <div id="dashboardContent">
+        <div class="container">
+            <div id="jobAnalysis" class="section">
+                <p id="jobCount" style="font-size: 12px; color: #646464;"></p>
+                <div id="jobAnalysisContent"></div>
+            </div>
+            <div id="userOverview" class="section">
+                <div class="user-overview-header">
+                    <h2>User Overview</h2>
+                </div>
+                <div class="user-overview-content">
+                    <div id="userOverviewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="docsContent">
+        <div class="upload-card">
+            <img src="upload-light.svg" alt="Upload Icon" class="upload-icon" id="uploadIcon">
+            <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Upload from your computer</button>
+            <div id="uploadStatus" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="loadingBar" style="display: none;">
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const logo = document.getElementById('logo');
+        const uploadIcon = document.getElementById('uploadIcon');
+        
+        function setTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-theme');
+                logo.src = 'Logo Dark.png';
+                uploadIcon.src = 'upload.svg';
+            } else {
+                document.body.classList.remove('dark-theme');
+                logo.src = 'Logo.png';
+                uploadIcon.src = 'upload-light.svg';
+            }
+        }
+
+        // Check for saved theme preference or default to light theme
+        const savedTheme = localStorage.getItem('theme');
+        setTheme(savedTheme === 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-theme');
+            setTheme(isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Existing fetch and data processing code
+        fetch('results.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Results not found. Please run the Python script first.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Function to remove markdown formatting
+                function removeMarkdown(text) {
+                    return text.replace(/\*\*/g, '');
+                }
+
+                // Format user overview
+                let userOverviewHtml = '<div class="section-header">Quick Intro:</div>';
+                let introText = removeMarkdown(data.userOverview.split('Strengths:')[0].trim());
+                userOverviewHtml += '<div class="overview-content">' + introText + '</div>';
+                
+                userOverviewHtml += '<div class="section-header">Strengths:</div>';
+                let strengths = removeMarkdown(data.userOverview.split('Strengths:')[1].split('Weaknesses:')[0].trim()).split('*').filter(s => s.trim() !== '');
+                userOverviewHtml += '<ul class="overview-list">';
+                strengths.forEach(strength => {
+                    userOverviewHtml += '<li>' + strength.trim() + '</li>';
+                });
+                userOverviewHtml += '</ul>';
+                
+                userOverviewHtml += '<div class="section-header">Room for improvement:</div>';
+                let weaknesses = removeMarkdown(data.userOverview.split('Weaknesses:')[1].trim()).split('*').filter(w => w.trim() !== '');
+                userOverviewHtml += '<ul class="overview-list">';
+                weaknesses.forEach(weakness => {
+                    userOverviewHtml += '<li>' + weakness.trim() + '</li>';
+                });
+                userOverviewHtml += '</ul>';
+                
+                document.getElementById('userOverviewContent').innerHTML = userOverviewHtml;
+                
+                // Format job analysis based on ranking order
+                let jobAnalysisHtml = '';
+                const jobCount = data.jobRanking.length;
+                document.getElementById('jobCount').textContent = `Found ${jobCount} potential jobs suited for you, based on your skills and background.`;
+
+                data.jobRanking.forEach((rankedJob) => {
+                    const job = data.jobAnalysis.find(j => rankedJob.includes(j.job.title));
+                    
+                    if (job) {
+                        jobAnalysisHtml += `<div class="job-item">`;
+                        jobAnalysisHtml += `<h3>${job.job.title} at ${job.job.company}</h3>`;
+                        
+                        // Add the Auto-Apply button
+                        jobAnalysisHtml += `<button class="auto-apply-btn" data-job-title="${job.job.title}" data-company="${job.job.company}"><i class="fas fa-paper-plane"></i> Auto-Apply</button>`;
+                        
+                        // Extract reasons for match and suggestions for improvement
+                        const analysisLines = removeMarkdown(job.analysis).split('\n');
+                        let reasons = '';
+                        let suggestions = '';
+                        let currentSection = '';
+                        let reasonCount = 1;
+                        let suggestionCount = 1;
+
+                        analysisLines.forEach(line => {
+                            if (line.toLowerCase().includes('reasons for the match')) {
+                                currentSection = 'reasons';
+                            } else if (line.toLowerCase().includes('suggestions for improvement')) {
+                                currentSection = 'suggestions';
+                            } else if (currentSection === 'reasons' && line.trim().startsWith('•')) {
+                                reasons += `<p>${reasonCount}. ${line.trim().substring(1).trim()}</p>`;
+                                reasonCount++;
+                            } else if (currentSection === 'suggestions' && line.trim().startsWith(suggestionCount + '.')) {
+                                suggestions += `<p>${line.trim()}</p>`;
+                                suggestionCount++;
+                            }
+                        });
+
+                        jobAnalysisHtml += `<h4>Reasons for Match:</h4>
+                                            <div class="reasons-list">
+                                                ${reasons || '<p>No specific reasons provided.</p>'}
+                                            </div>`;
+                        jobAnalysisHtml += `<h4>Suggestions for Improvement:</h4>
+                                            <div class="reasons-list">
+                                                ${suggestions || '<p>No specific suggestions provided.</p>'}
+                                            </div>`;
+                        jobAnalysisHtml += `</div>`;
+                    }
+                });
+                document.getElementById('jobAnalysisContent').innerHTML = jobAnalysisHtml;
+
+                // Add event listeners to the Auto-Apply buttons
+                document.querySelectorAll('.auto-apply-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const jobTitle = this.getAttribute('data-job-title');
+                        const company = this.getAttribute('data-company');
+                        alert(`Auto-applying for ${jobTitle} at ${company}`);
+                        // Here you would typically trigger the actual application process
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = error.message;
+            });
+
+        // Add this at the end of your script
+        const dashboardBtn = document.getElementById('dashboardBtn');
+        const docsBtn = document.getElementById('docsBtn');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const docsContent = document.getElementById('docsContent');
+
+        dashboardBtn.addEventListener('click', () => {
+            dashboardBtn.classList.add('active');
+            docsBtn.classList.remove('active');
+            dashboardContent.style.display = 'block';
+            docsContent.style.display = 'none';
+        });
+
+        docsBtn.addEventListener('click', () => {
+            docsBtn.classList.add('active');
+            dashboardBtn.classList.remove('active');
+            docsContent.style.display = 'block';
+            dashboardContent.style.display = 'none';
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadFile(file);
+            }
+        });
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const statusElement = document.getElementById('uploadStatus');
+            const loadingBar = document.getElementById('loadingBar');
+            const progressBar = loadingBar.querySelector('.progress-bar');
+
+            statusElement.textContent = 'Uploading...';
+            loadingBar.style.display = 'block';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    console.error('Server error:', data.error);
+                    statusElement.textContent = 'Error: ' + data.error;
+                } else {
+                    statusElement.textContent = 'File uploaded. Processing...';
+                    checkProcessingStatus();
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                statusElement.textContent = 'Error: ' + error.message;
+                loadingBar.style.display = 'none';
+            });
+        }
+
+        function checkProcessingStatus() {
+            const statusElement = document.getElementById('uploadStatus');
+            const loadingBar = document.getElementById('loadingBar');
+            const progressBar = loadingBar.querySelector('.progress-bar');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressBar.textContent = `${progress}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    fetch('/results.json')
+                        .then(response => response.json())
+                        .then(data => {
+                            statusElement.textContent = 'Processing complete!';
+                            loadingBar.style.display = 'none';
+                            updateUI(data);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching results:', error);
+                            statusElement.textContent = 'Error fetching results. Please try again.';
+                            loadingBar.style.display = 'none';
+                        });
+                }
+            }, 1000); // Update every second
+        }
+
+        function updateUI(results) {
+            // Update user overview
+            let userOverviewHtml = '<div class="section-header">Quick Intro:</div>';
+            let introText = removeMarkdown(results.userOverview.split('Strengths:')[0].trim());
+            userOverviewHtml += '<div class="overview-content">' + introText + '</div>';
+            
+            // ... (rest of the user overview update code)
+            
+            document.getElementById('userOverviewContent').innerHTML = userOverviewHtml;
+
+            // Update job analysis
+            let jobAnalysisHtml = '';
+            const jobCount = results.jobRanking.length;
+            document.getElementById('jobCount').textContent = `Found ${jobCount} potential jobs suited for you, based on your skills and background.`;
+
+            // ... (rest of the job analysis update code)
+            
+            document.getElementById('jobAnalysisContent').innerHTML = jobAnalysisHtml;
+
+            // Update other parts of the UI as needed
+        }
+    </script>
+</body>
+</html>
